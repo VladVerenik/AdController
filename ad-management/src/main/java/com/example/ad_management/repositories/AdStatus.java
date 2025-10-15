@@ -1,4 +1,4 @@
-package com.example.ad_management.repository;
+package com.example.ad_management.repositories;
 
 public enum AdStatus {
     PUBLISHED,
