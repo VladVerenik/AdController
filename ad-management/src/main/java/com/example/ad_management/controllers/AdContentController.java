@@ -1,82 +1,63 @@
 package com.example.ad_management.controllers;
 
-import com.example.ad_management.dto.AdContentShortResponse;
-import com.example.ad_management.repositories.AdContent;
-import com.example.ad_management.repositories.AdStatus;
-import com.example.ad_management.services.AdContentService;
+import com.example.ad_management.dto.AdMapper;
+import com.example.ad_management.dto.requests.SortAdRequest;
+import com.example.ad_management.dto.requests.UpdateAdRequest;
+import com.example.ad_management.dto.responses.AdResponse;
+import com.example.ad_management.dto.requests.CreateAdRequest;
+import com.example.ad_management.services.AdService;
+import lombok.Data;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.data.web.PageableDefault;
+import org.springframework.data.web.SortDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.time.LocalDate;
-import java.util.List;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
-@RequestMapping("/api/ad")
+@Data
+@RequestMapping("/api/v1/ad")
 public class AdContentController {
 
-    private final AdContentService adContentService;
-
-    public AdContentController(AdContentService adContentService) {
-        this.adContentService = adContentService;
-    }
+    private final AdService adService;
+    private final AdMapper adMapper;
 
     @GetMapping("/page")
-    public ResponseEntity<Page<AdContent>> getAdsById(
-            @PageableDefault(
-                    page = 0,
-                    size = 10,
+    public Page<AdResponse> getAds(
+            @SortDefault(
                     sort = "dateOfPublication",
                     direction = Sort.Direction.DESC
-
             )
-            Pageable pageable,
-            @RequestParam(required = false) String searchTitle
-            ) {
-        Page<AdContent> ads = adContentService.getAds(
-                pageable.getPageNumber(),
-                pageable.getPageSize(),
-                pageable.getSort().stream().
-                        findFirst()
-                        .map(Sort.Order::getProperty)
-                        .orElse("id"),
-                pageable.getSort().stream()
-                        .findFirst().
-                        map(order -> order.getDirection().name())
-                        .orElse("desc"),
-                searchTitle
+            SortAdRequest sortAdRequest,
+            String search,
+            Pageable pageable
+    ) {
+        return adService.getAds(
+                sortAdRequest,
+                search,
+                pageable
         );
-        return ResponseEntity.ok(ads);
-    }
-
-    @GetMapping
-    public List<AdContentShortResponse> getAllAds() {
-        return adContentService.getAllAds();
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<AdContent> updateAdvertisement(
+    public AdResponse updateAdvertisement(
             @PathVariable Long id,
-            @RequestBody AdContent updatedAdDetails,
+            @RequestBody UpdateAdRequest updateAdRequest,
             @RequestHeader("X-Published-By") String modifierId
     ) {
-        AdContent updatedAd = adContentService.updateAd(id, updatedAdDetails, modifierId);
-        return ResponseEntity.ok(updatedAd);
+        return adService.updateAd(id, updateAdRequest, modifierId);
     }
 
     @PostMapping
-    public ResponseEntity<AdContent> createAd(
-            @RequestBody AdContent newAd,
+    public AdResponse createAd(
+            @RequestBody CreateAdRequest createRequest,
+            @RequestBody MultipartFile image,
             @RequestHeader("X-Published-By") String publisherId
     ) {
-        AdContent createdAd = adContentService.createAd(publisherId, newAd);
-        return new ResponseEntity<>(createdAd, HttpStatus.CREATED);
+        return adService.createAd(publisherId, createRequest, image);
     }
-
 
     @DeleteMapping("/{id}")
     public ResponseEntity<String> deleteAd(
@@ -84,27 +65,7 @@ public class AdContentController {
             @RequestHeader("X-Published-By") String deleterId
 
     ) {
-        adContentService.deleteAd(id, deleterId);
+        adService.deleteAd(id, deleterId);
         return new ResponseEntity<>("Ad deleted", HttpStatus.NO_CONTENT);
-    }
-
-//    @GetMapping("/byStatus")
-//    public List<AdContent> getAdByStatus(@RequestParam AdStatus status) {
-//        return adContentService.findAdByStatus(status);
-//    }
-//
-//    @GetMapping("/byDate")
-//    public List<AdContent> getAdByStatus(@RequestParam LocalDate date) {
-//        return adContentService.findByDate(date);
-//    }
-
-    @GetMapping("/search")
-    public List<AdContent> searchAds(
-            @RequestParam AdStatus status,
-            @RequestParam LocalDate publishedDate,
-            @RequestParam LocalDate startDate,
-            @RequestParam LocalDate endDate
-    ) {
-       return adContentService.adFiltered(status, publishedDate, startDate, endDate);
     }
 }

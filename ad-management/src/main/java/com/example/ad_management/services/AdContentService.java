@@ -1,145 +1,109 @@
 package com.example.ad_management.services;
 
 import com.example.ad_management.dto.AdMapper;
-import com.example.ad_management.repositories.AdContent;
+import com.example.ad_management.dto.requests.SortAdRequest;
+import com.example.ad_management.dto.requests.UpdateAdRequest;
+import com.example.ad_management.dto.responses.AdResponse;
+import com.example.ad_management.dto.requests.CreateAdRequest;
+import com.example.ad_management.models.AdContentEntity;
 import com.example.ad_management.repositories.AdContentRepository;
-import com.example.ad_management.dto.AdContentShortResponse;
-import com.example.ad_management.repositories.AdContentSpecifications;
-import com.example.ad_management.repositories.AdStatus;
+import com.example.ad_management.specifications.AdContentSpecifications;
+import com.example.ad_management.enums.AdStatus;
+import lombok.Data;
 import org.springframework.data.domain.*;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
-import java.time.LocalDate;
-import java.util.List;
-import java.util.Optional;
 
+@Data
 @Service
-public class AdContentService {
+public class AdContentService implements AdService{
     private final AdContentRepository adContentRepository;
     private final AdMapper adMapper;
+    private final FileService fileService;
 
-    public AdContentService(AdContentRepository adContentRepository, AdMapper adMapper) {
-        this.adContentRepository = adContentRepository;
-        this.adMapper = adMapper;
-    }
-
+    @Override
     public void deleteAd(Long id, String deleterId) {
         if (deleterId == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Заголовок X-Published-By обязателен");
         }
 
-        Optional<AdContent> adContent = adContentRepository.findById(id);
-        if(adContent.isEmpty()) {
+        if (!adContentRepository.existsById(id)) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Такого id нету");
         }
 
-        AdContent adToDelete = adContent.get();
-        adToDelete.setStatus(AdStatus.DELETED);
-        adToDelete.setDateOfDeletion(LocalDate.now());
-        adContentRepository.save(adToDelete);
+        adContentRepository.deleteById(id);
     }
 
-    public AdContent createAd(String publisherId, AdContent newAd) {
+    @Override
+    public AdResponse createAd(String publisherId, CreateAdRequest createRequest, MultipartFile image) {
         if (publisherId == null || publisherId.isBlank()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Заголовок X-Published-By обязателен");
         }
-        if (newAd.getStatus() == AdStatus.DRAFT ) {
-            newAd.setDateOfPublication(null);
-        }
+        String url = fileService.buildImageUrl(fileService.store(image));
 
+        AdContentEntity newAd = adMapper.toEntity(createRequest);
         newAd.setCreatorId(publisherId);
         newAd.setLastModifiedBy(publisherId);
-        newAd.setStatus(AdStatus.PUBLISHED);
-        return adContentRepository.save(newAd);
+        newAd.setStatus(AdStatus.DRAFT);
+        newAd.setImageUrl(url);
+        AdContentEntity savedAd = adContentRepository.save(newAd);
+
+        return adMapper.toResponse(savedAd);
     }
 
-    public AdContent updateAd(Long id, AdContent updatedAdDetails, String modifierId) {
+    @Override
+    public AdResponse updateAd(Long id, UpdateAdRequest updateAdRequest, String modifierId) {
         if (modifierId == null || modifierId.isBlank()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Заголовок X-Published-By обязателен");
         }
 
-        AdContent existingAd = adContentRepository.findById(id)
+        AdContentEntity existingAd = adContentRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Рекламная запись с данным ID не найдена"));
 
-
-        existingAd.setDateOfPublication(updatedAdDetails.getDateOfPublication());
-        existingAd.setDateOfDeletion(updatedAdDetails.getDateOfDeletion());
-        existingAd.setAdvertiser(updatedAdDetails.getAdvertiser());
-        existingAd.setPublished(updatedAdDetails.getPublished());
-        existingAd.setStatus(updatedAdDetails.getStatus());
+        adMapper.updateEntity(existingAd, updateAdRequest);
         existingAd.setLastModifiedBy(modifierId);
 
         if (existingAd.getStatus() == AdStatus.DRAFT) {
             existingAd.setDateOfPublication(null);
         }
 
-        if(existingAd.getStatus() == AdStatus.DELETED) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Объявление удалено ");
-        }
+        AdContentEntity updatedAd = adContentRepository.save(existingAd);
+        return adMapper.toResponse(updatedAd);
 
-        return adContentRepository.save(existingAd);
     }
 
-    public Page<AdContent> getAds(
-            int pageNumber,
-            int pageSize,
-            String sortBy,
-            String sortDirection,
-            String searchTitle
+    @Override
+    public Page<AdResponse> getAds(
+            SortAdRequest sortAdRequest,
+            String search,
+            Pageable pageable
     ) {
-        Sort sort = Sort.by(Sort.Direction.fromString(sortDirection), sortBy);
-        Pageable pageable = PageRequest.of(pageNumber, pageSize, sort);
+        Specification<AdContentEntity> spec = Specification.not(null);
 
-        if (searchTitle != null && !searchTitle.isEmpty()) {
-            return adContentRepository.findByAdvertiserContainingIgnoreCase(searchTitle, pageable);
-        } else {
-            return adContentRepository.findAll(pageable);
+        if (sortAdRequest.status() != null) {
+            spec = spec.and(AdContentSpecifications.adStatus(sortAdRequest.status()));
         }
 
-
-    }
-
-    public List<AdContentShortResponse> getAllAds() {
-        List<AdContent> allAds = adContentRepository.findAll();
-        return adMapper.toShortResponseList(allAds);
-    }
-
-//    public List<AdContent> findAdByStatus(AdStatus status) {
-//        return adContentRepository.findAll(AdContentSpecifications.adStatus(status));
-//    }
-//
-//    public List<AdContent> findByDate(LocalDate date) {
-//        return adContentRepository.findAll(AdContentSpecifications.dateOfPublication(date));
-//
-//    }
-
-    public  List<AdContent> adFiltered (
-            AdStatus status,
-            LocalDate publicationDate,
-            LocalDate startDate,
-            LocalDate endDate
-    ) {
-
-        if (status != null) {
-            return adContentRepository.findAll(AdContentSpecifications.adStatus(status));
-        }
-        if (publicationDate == null){
-
-            if (startDate != null) {
-                return adContentRepository.findAll(AdContentSpecifications.createAfter(startDate));
-            }
-
-            if (endDate != null) {
-                return adContentRepository.findAll(AdContentSpecifications.createBefore(endDate));
-            }
+        if (sortAdRequest.publicationDate() != null) {
+            spec = spec.and(AdContentSpecifications.dateOfPublication(sortAdRequest.publicationDate()));
         }
 
-        if (startDate == null && endDate == null) {
-            return adContentRepository.findAll(AdContentSpecifications.dateOfPublication(publicationDate));
+        if (sortAdRequest.startDate() != null) {
+            spec = spec.and(AdContentSpecifications.createAfter(sortAdRequest.startDate()));
         }
 
-        return adContentRepository.findAll();
+        if (sortAdRequest.endDate() != null) {
+            spec = spec.and(AdContentSpecifications.createBefore(sortAdRequest.endDate()));
+        }
+
+        if (search != null && !search.isBlank()) {
+            spec = spec.and(AdContentSpecifications.search(search));
+        }
+
+        Page<AdContentEntity> entity = adContentRepository.findAll(spec, pageable);
+        return entity.map(adMapper::toResponse);
     }
 }
