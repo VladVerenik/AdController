@@ -5,14 +5,14 @@ import com.example.ad_management.dto.response.AgencyResponse;
 import com.example.ad_management.entity.AdAgencyEntity;
 import com.example.ad_management.mapper.AgencyMapper;
 import com.example.ad_management.repository.AgencyRepository;
-import lombok.Data;
+import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
-@Data
+@AllArgsConstructor
 @Service
 public class AgencyServiceImp implements AgencyService {
     private final AgencyRepository repository;
@@ -22,7 +22,6 @@ public class AgencyServiceImp implements AgencyService {
     public AgencyResponse create(CreateAgenciesRequest createAgenciesRequest) {
         AdAgencyEntity newAgencies = mapper.toAgenciesEntity(createAgenciesRequest);
         AdAgencyEntity savedAd = repository.save(newAgencies);
-
         return mapper.toResponse(savedAd);
     }
 
@@ -36,15 +35,12 @@ public class AgencyServiceImp implements AgencyService {
 
     @Override
     public AgencyResponse update(Long id, UpdateAgenciesRequest updateAgenciesRequest) {
-
         AdAgencyEntity existingAgencies = repository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Рекламная запись с данным ID не найдена"));
 
         mapper.updateEntity(existingAgencies, updateAgenciesRequest);
-
         AdAgencyEntity updatedAd = repository.save(existingAgencies);
         return mapper.toResponse(updatedAd);
-
     }
 
     @Override

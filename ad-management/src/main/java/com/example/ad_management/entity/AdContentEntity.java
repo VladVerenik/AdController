@@ -2,6 +2,7 @@ package com.example.ad_management.entity;
 
 import com.example.ad_management.enums.AdStatus;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import org.hibernate.annotations.SQLDelete;
@@ -44,7 +45,7 @@ public class AdContentEntity {
     @Enumerated(EnumType.STRING)
     private AdStatus status;
 
-    @NotNull
+    @NotBlank
     private String advertiser;
 
     private String published;
@@ -55,10 +56,11 @@ public class AdContentEntity {
     @Column(name = "last_modified_by")
     private String lastModifiedBy;
 
+    @NotBlank
     @Column(name = "advertiser_link")
     private String advertiserLink;
 
-    @NotNull
+    @NotBlank
     @Column(name = "image_url")
     private String imageUrl;
 

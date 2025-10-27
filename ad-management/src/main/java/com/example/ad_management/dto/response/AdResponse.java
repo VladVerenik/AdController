@@ -17,6 +17,5 @@ public record AdResponse (Long id,
                           String advertiserLink,
                           String imageUrl,
                           AgencyShortResponse agencyShortResponse
-
 ){}
 

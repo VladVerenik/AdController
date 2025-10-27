@@ -1,12 +1,11 @@
 package com.example.ad_management.controller;
 
-import com.example.ad_management.mapper.AdMapper;
 import com.example.ad_management.dto.request.FilterAdRequest;
 import com.example.ad_management.dto.request.UpdateAdRequest;
 import com.example.ad_management.dto.response.AdResponse;
 import com.example.ad_management.dto.request.CreateAdRequest;
 import com.example.ad_management.service.AdService;
-import lombok.Data;
+import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -16,31 +15,29 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@Data
+@AllArgsConstructor
 @RequestMapping("/api/v1/ad")
 public class AdContentController {
-
     private final AdService service;
-    private final AdMapper mapper;
 
     @PostMapping
     public AdResponse create(
-            @RequestBody CreateAdRequest createRequest,
-            @RequestBody String image,
+            CreateAdRequest createRequest,
+            String image,
             @RequestHeader("X-Published-By") String publisherId,
-            @RequestBody Long id
+            Long id
     ) {
         return service.create(publisherId, createRequest, image, id);
     }
 
     @GetMapping
     public Page<AdResponse> findAll(
-            @SortDefault(
-                    sort = "dateOfPublication",
-                    direction = Sort.Direction.DESC
-            )
             FilterAdRequest filterAdRequest,
             String search,
+            @SortDefault(
+                    sort = "publishedAt",
+                    direction = Sort.Direction.DESC
+            )
             Pageable pageable
     ) {
         return service.findAll(

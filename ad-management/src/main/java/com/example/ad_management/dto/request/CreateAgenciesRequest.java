@@ -1,14 +1,9 @@
 package com.example.ad_management.dto.request;
 
-import jakarta.validation.constraints.NotNull;
-
-import java.time.LocalDateTime;
+import jakarta.validation.constraints.NotBlank;
 
 public record CreateAgenciesRequest (
-        @NotNull
+        @NotBlank
         String agencyName,
-        LocalDateTime deletedAt,
-        LocalDateTime creationAt,
-        @NotNull
         boolean isSecureLink
 ){}

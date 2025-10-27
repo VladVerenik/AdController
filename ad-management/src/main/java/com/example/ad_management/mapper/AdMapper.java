@@ -6,10 +6,10 @@ import com.example.ad_management.dto.response.AdResponse;
 import com.example.ad_management.entity.AdAgencyEntity;
 import com.example.ad_management.entity.AdContentEntity;
 import com.example.ad_management.enums.AdStatus;
-import lombok.Data;
+import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
 
-@Data
+@AllArgsConstructor
 @Component
 public class AdMapper {
     private final AgencyMapper mapper;
@@ -25,9 +25,7 @@ public class AdMapper {
         entity.setStatus(AdStatus.DRAFT);
         entity.setAdvertiser(requestDto.advertiser());
         entity.setAdvertiserLink(requestDto.advertiserLink());
-        entity.setImageUrl(requestDto.imageUrl());
         entity.setPublished(requestDto.published());
-
         return entity;
     }
 

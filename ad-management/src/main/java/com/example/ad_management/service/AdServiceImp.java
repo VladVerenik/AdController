@@ -11,14 +11,14 @@ import com.example.ad_management.repository.AdContentRepository;
 import com.example.ad_management.repository.AgencyRepository;
 import com.example.ad_management.repository.specification.AdContentSpecifications;
 import com.example.ad_management.enums.AdStatus;
-import lombok.Data;
+import lombok.AllArgsConstructor;
 import org.springframework.data.domain.*;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
-@Data
+@AllArgsConstructor
 @Service
 public class AdServiceImp implements AdService{
     private final AgencyRepository agencyRepository;
@@ -32,7 +32,7 @@ public class AdServiceImp implements AdService{
         }
 
         AdAgencyEntity agency = agencyRepository.findById(agenciesId)
-                .orElseThrow(() -> new RuntimeException("Агентство не найдено"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Агентство не найдено"));
 
         AdContentEntity newAd = mapper.toAdEntity(createRequest, publisherId, imageUrl);
         checkSecureLink(agency, newAd);
@@ -69,11 +69,13 @@ public class AdServiceImp implements AdService{
             existingAd.setPublishedAt(null);
         }
 
-        AdAgencyEntity existingAgencies = agencyRepository.findById(updateAdRequest.agenciesId())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Агенство с данным ID не найдено"));
+        if(updateAdRequest.agenciesId() != null) {
+            AdAgencyEntity existingAgencies = agencyRepository.findById(updateAdRequest.agenciesId())
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Агенство с данным ID не найдено"));
 
-        checkSecureLink(existingAgencies, existingAd);
-        existingAd.setAdAgencyEntity(existingAgencies);
+            checkSecureLink(existingAgencies, existingAd);
+            existingAd.setAdAgencyEntity(existingAgencies);
+        }
         AdContentEntity updatedAd = adContentRepository.save(existingAd);
         return mapper.toResponse(updatedAd);
     }
@@ -83,11 +85,9 @@ public class AdServiceImp implements AdService{
         if (deleterId == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Заголовок X-Published-By обязателен");
         }
-
         if (!adContentRepository.existsById(id)) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Такого id нету");
         }
-
         adContentRepository.deleteById(id);
     }
 

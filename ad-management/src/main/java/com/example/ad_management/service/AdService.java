@@ -6,7 +6,6 @@ import com.example.ad_management.dto.response.AdResponse;
 import com.example.ad_management.dto.request.CreateAdRequest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.web.multipart.MultipartFile;
 
 public interface AdService {
     void delete(Long id, String deleterId);

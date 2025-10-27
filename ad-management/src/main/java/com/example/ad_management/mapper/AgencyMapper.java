@@ -15,8 +15,6 @@ public class AgencyMapper {
         }
         AdAgencyEntity entity = new AdAgencyEntity();
         entity.setAgencyName(requestDto.agencyName());
-        entity.setDeletedAt(requestDto.deletedAt());
-        entity.setCreatedAt(requestDto.creationAt());
         entity.setSecureLink(requestDto.isSecureLink());
 
         return entity;
@@ -28,8 +26,6 @@ public class AgencyMapper {
         }
         entity.setAgencyName(request.agencyName());
         entity.setSecureLink(request.isSecureLink());
-        entity.setCreatedAt(request.creationAt());
-        entity.setDeletedAt(request.deletedAt());
     }
 
     public AgencyResponse toResponse(AdAgencyEntity entity) {

@@ -5,6 +5,7 @@ import com.example.ad_management.dto.request.UpdateAgenciesRequest;
 import com.example.ad_management.dto.response.AgencyResponse;
 import com.example.ad_management.mapper.AgencyMapper;
 import com.example.ad_management.service.AgencyService;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -13,7 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@Data
+@AllArgsConstructor
 @RequestMapping("/api/v1/agencies")
 public class AgencyController {
 

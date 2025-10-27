@@ -2,6 +2,7 @@ package com.example.ad_management.controller;
 
 import com.example.ad_management.dto.request.FileResource;
 import com.example.ad_management.service.FileService;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
@@ -10,7 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-@Data
+@AllArgsConstructor
 @RestController
 @RequestMapping("/api/v1/files")
 public class FileController {

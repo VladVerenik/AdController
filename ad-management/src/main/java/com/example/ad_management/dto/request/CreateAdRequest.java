@@ -1,12 +1,12 @@
 package com.example.ad_management.dto.request;
 
-import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotBlank;
 
 public record CreateAdRequest(
         String advertiser,
-        @NotNull
+        @NotBlank
         String advertiserLink,
-        @NotNull
+        @NotBlank
         String imageUrl,
         String published
 ) {}
