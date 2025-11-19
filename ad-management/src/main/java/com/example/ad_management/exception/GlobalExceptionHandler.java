@@ -23,7 +23,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(StorageFileNotFoundException.class)
     public ResponseEntity<ErrorResponse> handleStorageNotFoundException(StorageFileNotFoundException e) {
         ErrorResponse errorResponse = new ErrorResponse("Не удалось найти файл" + e.getMessage());
-        return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
+        return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
     }
 
     @ExceptionHandler(Exception.class)

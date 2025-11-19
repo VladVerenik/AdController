@@ -6,8 +6,9 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import org.hibernate.annotations.SQLDelete;
-import org.hibernate.annotations.Where;
+import org.hibernate.annotations.SQLRestriction;
 import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedBy;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -20,13 +21,12 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @EntityListeners(AuditingEntityListener.class)
 @SQLDelete(sql = "UPDATE ad_content SET deleted_at = now() WHERE id = ?")
-@Where(clause = "deleted_at is null")
+@SQLRestriction("deleted_at is null")
 public class AdContentEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @CreatedDate
     @Column(name = "published_at")
     private LocalDate publishedAt;
 
@@ -37,7 +37,7 @@ public class AdContentEntity {
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 
-    @CreatedDate
+    @LastModifiedBy
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
@@ -46,8 +46,10 @@ public class AdContentEntity {
     private AdStatus status;
 
     @NotBlank
+    @Column(name = "advertiser")
     private String advertiser;
 
+    @Column(name = "published")
     private String published;
 
     @Column(name = "creator_id")

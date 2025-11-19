@@ -14,18 +14,18 @@ import org.springframework.stereotype.Component;
 public class AdMapper {
     private final AgencyMapper mapper;
 
-    public AdContentEntity toAdEntity(CreateAdRequest requestDto, String publisherId, String imageUrl) {
+    public AdContentEntity toAdEntity(CreateAdRequest requestDto, String publisherId) {
         if (requestDto == null) {
             return null;
         }
         AdContentEntity entity = new AdContentEntity();
-        entity.setImageUrl(imageUrl);
         entity.setCreatorId(publisherId);
         entity.setLastModifiedBy(publisherId);
         entity.setStatus(AdStatus.DRAFT);
         entity.setAdvertiser(requestDto.advertiser());
         entity.setAdvertiserLink(requestDto.advertiserLink());
         entity.setPublished(requestDto.published());
+        entity.setImageUrl(requestDto.imageUrl());
         return entity;
     }
 

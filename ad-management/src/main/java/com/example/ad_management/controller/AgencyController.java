@@ -3,10 +3,8 @@ package com.example.ad_management.controller;
 import com.example.ad_management.dto.request.CreateAgenciesRequest;
 import com.example.ad_management.dto.request.UpdateAgenciesRequest;
 import com.example.ad_management.dto.response.AgencyResponse;
-import com.example.ad_management.mapper.AgencyMapper;
 import com.example.ad_management.service.AgencyService;
 import lombok.AllArgsConstructor;
-import lombok.Data;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -17,12 +15,10 @@ import org.springframework.web.bind.annotation.*;
 @AllArgsConstructor
 @RequestMapping("/api/v1/agencies")
 public class AgencyController {
-
     private final AgencyService service;
-    private final AgencyMapper mapper;
 
     @PostMapping
-    public AgencyResponse create(@RequestBody CreateAgenciesRequest createAgenciesRequest) {
+    public AgencyResponse create(CreateAgenciesRequest createAgenciesRequest) {
         return service.create(createAgenciesRequest);
     }
 
@@ -32,7 +28,7 @@ public class AgencyController {
     }
 
     @PutMapping("/{id}")
-    public AgencyResponse update(@PathVariable Long id, @RequestBody UpdateAgenciesRequest updateAgenciesRequest) {
+    public AgencyResponse update(@PathVariable Long id, UpdateAgenciesRequest updateAgenciesRequest) {
         return service.update(id, updateAgenciesRequest);
     }
 

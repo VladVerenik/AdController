@@ -23,11 +23,9 @@ public class AdContentController {
     @PostMapping
     public AdResponse create(
             CreateAdRequest createRequest,
-            String image,
-            @RequestHeader("X-Published-By") String publisherId,
-            Long id
+            @RequestHeader("X-Published-By") String publisherId
     ) {
-        return service.create(publisherId, createRequest, image, id);
+        return service.create(publisherId, createRequest);
     }
 
     @GetMapping
@@ -50,7 +48,7 @@ public class AdContentController {
     @PutMapping("/{id}")
     public AdResponse update(
             @PathVariable Long id,
-            @RequestBody UpdateAdRequest updateAdRequest,
+            UpdateAdRequest updateAdRequest,
             @RequestHeader("X-Published-By") String modifierId
     ) {
         return service.update(id, updateAdRequest, modifierId);

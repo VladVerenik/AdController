@@ -20,21 +20,21 @@ import org.springframework.web.server.ResponseStatusException;
 
 @AllArgsConstructor
 @Service
-public class AdServiceImp implements AdService{
+public class AdServiceImpl implements AdService{
     private final AgencyRepository agencyRepository;
     private final AdContentRepository adContentRepository;
     private final AdMapper mapper;
 
     @Override
-    public AdResponse create(String publisherId, CreateAdRequest createRequest, String imageUrl, Long agenciesId) {
+    public AdResponse create(String publisherId, CreateAdRequest createRequest) {
         if (publisherId == null || publisherId.isBlank()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Заголовок X-Published-By обязателен");
         }
 
-        AdAgencyEntity agency = agencyRepository.findById(agenciesId)
+        AdAgencyEntity agency = agencyRepository.findById(createRequest.agenciesId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Агентство не найдено"));
 
-        AdContentEntity newAd = mapper.toAdEntity(createRequest, publisherId, imageUrl);
+        AdContentEntity newAd = mapper.toAdEntity(createRequest, publisherId);
         checkSecureLink(agency, newAd);
         newAd.setAdAgencyEntity(agency);
         AdContentEntity savedAd = adContentRepository.save(newAd);
@@ -47,10 +47,8 @@ public class AdServiceImp implements AdService{
             String search,
             Pageable pageable
     ) {
-        return getSpecification(
-                filterAdRequest,
-                search,
-                pageable);
+        Specification<AdContentEntity> spec = getSpecification(filterAdRequest, search);
+        return adContentRepository.findAll(spec, pageable).map(mapper::toResponse);
     }
 
     @Override
@@ -91,10 +89,9 @@ public class AdServiceImp implements AdService{
         adContentRepository.deleteById(id);
     }
 
-    private Page<AdResponse> getSpecification(
+    private Specification<AdContentEntity> getSpecification(
             FilterAdRequest filterAdRequest,
-            String search,
-            Pageable pageable
+            String search
     ) {
         Specification<AdContentEntity> spec = Specification.not(null);
 
@@ -117,9 +114,7 @@ public class AdServiceImp implements AdService{
         if (search != null && !search.isBlank()) {
             spec = spec.and(AdContentSpecifications.search(search));
         }
-
-        Page<AdContentEntity> entity = adContentRepository.findAll(spec, pageable);
-        return entity.map(mapper::toResponse);
+        return spec;
     }
 
     private void checkSecureLink (AdAgencyEntity adAgencyEntity, AdContentEntity adContentEntity) {

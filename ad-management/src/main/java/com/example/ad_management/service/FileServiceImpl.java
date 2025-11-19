@@ -4,9 +4,7 @@ import com.example.ad_management.dto.request.FileResource;
 import com.example.ad_management.exception.StorageException;
 import com.example.ad_management.exception.StorageFileNotFoundException;
 import com.example.ad_management.exception.ValidationException;
-import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.tika.Tika;
 import org.springframework.beans.factory.annotation.Value;
@@ -29,7 +27,7 @@ import java.util.UUID;
 
 @Data
 @Service
-public class FileServiceImp implements FileService {
+public class FileServiceImpl implements FileService {
 
     @Value("${file.upload-dir}")
     private String uploadDir;
@@ -48,7 +46,6 @@ public class FileServiceImp implements FileService {
         }
 
         validateFileContent(file);
-
         try {
             String fileName = file.getOriginalFilename();
             String baseName = FilenameUtils.getBaseName(fileName);
@@ -60,7 +57,6 @@ public class FileServiceImp implements FileService {
             Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
 
             return buildImageUrl(newFileName);
-
         } catch (IOException e) {
             throw new StorageException("Ошибка при сохранении файла " + file.getOriginalFilename(), e);
         }

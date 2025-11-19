@@ -9,7 +9,7 @@ import org.springframework.data.domain.Pageable;
 
 public interface AdService {
     void delete(Long id, String deleterId);
-    AdResponse create(String publisherId, CreateAdRequest createAdRequest, String imageUrl,  Long id);
+    AdResponse create(String publisherId, CreateAdRequest createAdRequest);
     AdResponse update(Long id, UpdateAdRequest updatedAdDetails, String modifierId);
     Page<AdResponse> findAll(FilterAdRequest filterAdRequest, String search, Pageable pageable);
 }

@@ -8,5 +8,6 @@ public record CreateAdRequest(
         String advertiserLink,
         @NotBlank
         String imageUrl,
-        String published
+        String published,
+        Long agenciesId
 ) {}

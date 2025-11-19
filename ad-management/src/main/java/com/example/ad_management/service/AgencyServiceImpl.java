@@ -14,7 +14,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 @AllArgsConstructor
 @Service
-public class AgencyServiceImp implements AgencyService {
+public class AgencyServiceImpl implements AgencyService {
     private final AgencyRepository repository;
     private final AgencyMapper mapper;
 
